@@ -481,6 +481,11 @@ class VRuler extends Ruler {
 				this._moveIndentationEnd,
 				this,
 			);
+			// Detach the document-level fallback we attached in _initiateIndentationDrag.
+			if ((this as any)._docMouseUpFallback) {
+				document.removeEventListener('mouseup', (this as any)._docMouseUpFallback, true);
+				(this as any)._docMouseUpFallback = null;
+			}
 		}
 
 		// Calculation step..
@@ -578,5 +583,28 @@ class VRuler extends Ruler {
 		this._initialposition = this._lastposition = e.clientY - documentTop;
 		this._markerHorizontalLine.style.display = 'block';
 		this._markerHorizontalLine.style.left = this._lastposition + 'px';
+
+		// Fallback: if mouseup is missed on `this._map` (e.g. user releases the
+		// button outside the map area), make sure the dotted indentation guide
+		// is hidden anyway. Uses capture phase to catch the event everywhere.
+		const fallback = () => {
+			this._markerHorizontalLine.style.display = 'none';
+			window.L.DomEvent.off(
+				this._rFace,
+				'mousemove',
+				this._moveIndentation,
+				this,
+			);
+			window.L.DomEvent.off(
+				this._map,
+				'mouseup',
+				this._moveIndentationEnd,
+				this,
+			);
+			document.removeEventListener('mouseup', fallback, true);
+			(this as any)._docMouseUpFallback = null;
+		};
+		(this as any)._docMouseUpFallback = fallback;
+		document.addEventListener('mouseup', fallback, true);
 	}
 }

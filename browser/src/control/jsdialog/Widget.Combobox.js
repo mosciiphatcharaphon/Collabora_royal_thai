@@ -302,6 +302,30 @@ JSDialog.combobox = function (parentContainer, data, builder) {
 				return;
 			}
 		}
+
+		// Type-to-filter (only when the dropdown is already open). Auto-opening
+		// fights the dropdown's async render + focus management and ends up
+		// unstable, so we keep the open/close gesture purely user-driven via
+		// the ▼ button. Substring match is forgiving — typing any contiguous
+		// chunk of a font name hides the rest.
+		const ignoredKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+			'Enter', 'Escape', 'Tab', 'Shift', 'Control', 'Alt', 'Meta'];
+		if (ignoredKeys.indexOf(event.key) === -1 &&
+			builder.map.jsdialog.hasDropdownOpened()) {
+			const queryStr = (this.value || '').toLowerCase().trim();
+			const dropdownRoot = JSDialog.GetDropdown(data.id);
+			if (dropdownRoot) {
+				const entryElements = dropdownRoot.querySelectorAll('.ui-combobox-entry');
+				entryElements.forEach(function (el) {
+					// Match fonts whose name starts with the typed query.
+					// textContent may include preview characters appended after
+					// the name, so we trim and split on the first non-word char
+					// to extract just the font name itself.
+					const fullText = (el.textContent || '').toLowerCase().trim();
+					el.style.display = (queryStr === '' || fullText.startsWith(queryStr)) ? '' : 'none';
+				});
+			}
+		}
 	});
 
 	var comboboxId = data.id;

@@ -1202,6 +1202,10 @@ class HRuler extends Ruler {
 		tabstopContainer.tabStopMarkerBeingDragged = tabstop;
 		tabstopContainer.tabStopInitialPosiiton = pointX;
 
+		// Show a vertical dotted guide line so the user can see where the tab
+		// stop will land in the document while dragging.
+		this._showTabStopGuide(tabstopContainer, tabstop.tabStopLocation.left);
+
 		if (
 			!this.getWindowProperty<boolean>('ThisIsTheiOSApp') &&
 			event.pointerType !== 'touch'
@@ -1247,6 +1251,9 @@ class HRuler extends Ruler {
 
 		var pixelDiff = pointX - tabstopContainer.tabStopInitialPosiiton;
 		marker.style.left = marker.tabStopLocation.left + pixelDiff + 'px';
+
+		// Move the dotted guide line to follow the marker.
+		this._updateTabStopGuide(tabstopContainer, marker.tabStopLocation.left + pixelDiff);
 	}
 
 	_endTabstopDrag(event: any) {
@@ -1307,6 +1314,53 @@ class HRuler extends Ruler {
 			this._endTabstopDrag,
 			this,
 		);
+
+		// Tear down the dotted guide line.
+		this._hideTabStopGuide();
+	}
+
+	// Vertical dotted guide line shown in the document while a tab stop
+	// marker is being dragged on the ruler.
+	_showTabStopGuide(tabstopContainer: any, markerLeftPx: number) {
+		this._hideTabStopGuide();
+		var line = document.createElement('div');
+		line.className = 'cool-ruler-tabstop-guide';
+		line.style.position = 'fixed';
+		line.style.top = (tabstopContainer.getBoundingClientRect().bottom) + 'px';
+		line.style.bottom = '0';
+		line.style.width = '0';
+		line.style.borderLeft = '1px dashed #888';
+		line.style.pointerEvents = 'none';
+		line.style.zIndex = '10000';
+		document.body.appendChild(line);
+		(this as any)._tabStopGuideLine = line;
+		(this as any)._tabStopGuideContainer = tabstopContainer;
+		this._updateTabStopGuide(tabstopContainer, markerLeftPx);
+	}
+
+	_updateTabStopGuide(tabstopContainer: any, markerLeftPx: number) {
+		var line = (this as any)._tabStopGuideLine;
+		if (!line) return;
+		// Align the guide with the marker's actual horizontal centre so it
+		// matches where the tab will land in the text, not the marker's CSS
+		// left edge.
+		var marker = tabstopContainer.tabStopMarkerBeingDragged;
+		var containerLeft = tabstopContainer.getBoundingClientRect().left;
+		var screenX;
+		if (marker) {
+			var markerRect = marker.getBoundingClientRect();
+			screenX = markerRect.left + markerRect.width / 2;
+		} else {
+			screenX = containerLeft + markerLeftPx;
+		}
+		line.style.left = screenX + 'px';
+	}
+
+	_hideTabStopGuide() {
+		var line = (this as any)._tabStopGuideLine;
+		if (line && line.parentNode) line.parentNode.removeChild(line);
+		(this as any)._tabStopGuideLine = null;
+		(this as any)._tabStopGuideContainer = null;
 	}
 
 	_onTabstopContainerLongPress(event: any) {

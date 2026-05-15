@@ -175,7 +175,7 @@ class BrowserProperties {
 					return true;
 				}
 
-				return global.L.Browser.mobile && (screen.width < 768 || screen.height < 768);
+				return global.L.Browser.mobile && (screen.width < 400 || screen.height < 400);
 			},
 			// Mobile device with big screen size.
 			isTablet: function() {

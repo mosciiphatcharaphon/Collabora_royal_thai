@@ -275,15 +275,28 @@ namespace FileUtil
 
                 localStorageDir.pushDirectory(tmpMapping);
 
-                localStorePath = localStorageDir.toString();
-
-                localPath = jailPath.toString();
+                // Rootless-mode fallback: when the expected mount-namespace layout
+                // (<childRoot>/tmp/cool-<jailId>) doesn't exist on disk, the real
+                // file is under <childRoot>/<jailId>/tmp/cool-* instead.
+                if (!Poco::File(localStorageDir.toString()).exists())
+                {
+                    // Don't apply the special remapping — fall through to plain concat below.
+                }
+                else
+                {
+                    localStorePath = localStorageDir.toString();
+                    localPath = jailPath.toString();
+                }
             }
         }
 
         // /chroot/jailId/user/doc/childId
         const Poco::Path rootPath = Poco::Path(localStorePath, localPath);
-        Poco::File(rootPath).createDirectories();
+        // Only create parent directories; the leaf may be a target file (not a dir).
+        if (rootPath.isDirectory())
+            Poco::File(rootPath).createDirectories();
+        else
+            Poco::File(rootPath.parent()).createDirectories();
 
         return rootPath.toString();
     }
