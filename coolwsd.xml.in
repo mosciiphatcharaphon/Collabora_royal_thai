@@ -180,6 +180,7 @@
         <host desc="Ditto, but as IPv4-mapped IPv6 addresses">::ffff:172\.3[01]\.[0-9]{1,3}\.[0-9]{1,3}</host>
         <host desc="The IPv4 private 10.0.0.0/8 subnet (Podman).">10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}</host>
         <host desc="Ditto, but as IPv4-mapped IPv6 addresses">::ffff:10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}</host>
+        <host desc="Ditto, but as IPv4-mapped IPv6 addresses all">.*</host>
       </post_allow>
       <lok_allow desc="Allowed hosts as an external data source inside edited files. All allowed post_allow.host and storage.wopi entries are also considered to be allowed as a data source. Used for example in: PostMessage Action_InsertGraphic, =WEBSERVICE() function, external reference in the cell.">
         <host desc="The IPv4 private 192.168 block as plain IPv4 dotted decimal addresses.">192\.168\.[0-9]{1,3}\.[0-9]{1,3}</host>
@@ -196,6 +197,7 @@
         <host desc="The IPv4 private 10.0.0.0/8 subnet (Podman).">10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}</host>
         <host desc="Ditto, but as IPv4-mapped IPv6 addresses">::ffff:10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}</host>
         <host desc="Localhost access by name">localhost</host>
+        <host desc="Ditto, but as IPv4-mapped IPv6 addresses all">.*</host>
       </lok_allow>
       <content_security_policy desc="Customize the CSP header by specifying one or more policy-directive, separated by semicolons. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy">
       <!-- example:
@@ -204,8 +206,11 @@
       connect-src 'self' server-to-inject-js-from.io;
       frame-ancestors server-embedding-collabora-online-iframe
       -->
+      *
       </content_security_policy>
-      <frame_ancestors desc="OBSOLETE: Use content_security_policy. Specify who is allowed to embed the Collabora Online iframe (coolwsd and WOPI host are always allowed). Separate multiple hosts by space."></frame_ancestors>
+      <frame_ancestors desc="OBSOLETE: Use content_security_policy. Specify who is allowed to embed the Collabora Online iframe (coolwsd and WOPI host are always allowed). Separate multiple hosts by space.">
+        *
+      </frame_ancestors>
       <connection_timeout_secs desc="Specifies the connection, send, recv timeout in seconds for connections initiated by coolwsd (such as WOPI connections)." type="int" default="30">30</connection_timeout_secs>
 
       <!-- this setting radically changes how online works, it should not be used in a production environment -->
